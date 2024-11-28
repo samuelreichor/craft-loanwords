@@ -71,20 +71,30 @@ class Install extends Migration
 
     protected function removeTables(): void
     {
-        $this->dropForeignKey('fk-loanwords-siteId', Constants::TABLE_MAIN);
+        $this->dropForeignKey('loanwords-siteId', Constants::TABLE_MAIN);
         $this->dropTableIfExists(Constants::TABLE_MAIN);
     }
 
     protected function addForeignKeys(): void
     {
         $this->addForeignKey(
-            'fk-loanwords-siteId', // Name des Foreign Keys
-            '{{%loanwords}}', // Tabelle mit dem Foreign Key
-            'siteId', // Spalte, die den Foreign Key enthält
-            '{{%sites}}', // Referenzierte Tabelle
-            'id', // Referenzierte Spalte
-            'CASCADE', // Aktion bei Löschung der referenzierten Zeile
-            'CASCADE'  // Aktion bei Aktualisierung der referenzierten Zeile
+            'loanwords-siteId',
+            Constants::TABLE_MAIN,
+            'siteId',
+            '{{%sites}}',
+            'id',
+            'CASCADE',
+            'CASCADE'
+        );
+
+        $this->addForeignKey(
+            null,
+            Constants::TABLE_MAIN,
+            'id',
+            '{{%elements}}',
+            'id',
+            'CASCADE',
+            null
         );
     }
 }

@@ -5,6 +5,13 @@ namespace samuelreichor\loanwords;
 use Craft;
 use craft\base\Model;
 use craft\base\Plugin;
+use craft\events\DefineFieldLayoutFieldsEvent;
+use craft\events\RegisterComponentTypesEvent;
+use craft\fieldlayoutelements\TextField;
+use craft\fieldlayoutelements\TitleField;
+use craft\models\FieldLayout;
+use craft\services\Elements;
+use samuelreichor\loanwords\elements\Loanword;
 use samuelreichor\loanwords\models\Settings;
 
 use craft\events\RegisterUrlRulesEvent;
@@ -28,6 +35,7 @@ use yii\base\InvalidConfigException;
 class Loanwords extends Plugin
 {
     public string $schemaVersion = '1.0.0';
+    public bool $hasCpSection = true;
     public bool $hasCpSettings = true;
 
     public static function config(): array
@@ -45,9 +53,6 @@ class Loanwords extends Plugin
 
         $this->attachEventHandlers();
 
-        $this->hasCpSection = true;
-
-
         if (Craft::$app->getRequest()->getIsCpRequest()) {
             $this->registerCpRoutes();
         }
@@ -57,6 +62,11 @@ class Loanwords extends Plugin
         Craft::$app->onInit(function() {
             // ...
         });
+    }
+
+    public function getPluginName(): string
+    {
+        return Craft::t('loanwords', 'Loanwords');
     }
 
     /**
@@ -83,8 +93,40 @@ class Loanwords extends Plugin
 
     private function attachEventHandlers(): void
     {
-        // Register event handlers here ...
-        // (see https://craftcms.com/docs/5.x/extend/events.html to get started)
+        Event::on(
+            Elements::class,
+            Elements::EVENT_REGISTER_ELEMENT_TYPES,
+            function(RegisterComponentTypesEvent $event) {
+                $event->types[] = Loanword::class;
+            }
+        );
+
+        Event::on(
+            FieldLayout::class,
+            FieldLayout::EVENT_DEFINE_NATIVE_FIELDS,
+            function(DefineFieldLayoutFieldsEvent $event) {
+                /** @var FieldLayout $fieldLayout */
+                $fieldLayout = $event->sender;
+
+                if ($fieldLayout->type !== Loanword::class) {
+                    return;
+                }
+
+                $event->fields[] = [
+                    'class' => TextField::class,
+                    'attribute' => 'loanword',
+                    'type' => 'text',
+                    'mandatory' => true,
+                ];
+
+                $event->fields[] = [
+                    'class' => TextField::class,
+                    'attribute' => 'lang',
+                    'type' => 'text',
+                    'mandatory' => true,
+                ];
+            }
+        );
     }
 
     private function registerCpRoutes(): void

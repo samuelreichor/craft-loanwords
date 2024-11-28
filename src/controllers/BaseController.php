@@ -3,12 +3,10 @@
 namespace samuelreichor\loanwords\controllers;
 
 use Craft;
-use craft\db\Query;
-use craft\errors\MissingComponentException;
 use craft\web\Controller;
 use samuelreichor\loanwords\Constants;
+use samuelreichor\loanwords\elements\Loanword;
 use yii\db\Exception;
-use yii\db\Expression;
 use yii\web\BadRequestHttpException;
 use yii\web\MethodNotAllowedHttpException;
 use yii\web\Response;
@@ -21,12 +19,12 @@ class BaseController extends Controller
         $request = Craft::$app->getRequest();
         $currentSiteHandle = $request->getQueryParam('site');
         $currentSiteId = Craft::$app->sites->getSiteByHandle($currentSiteHandle)->id;
+
         $variables = [];
-        $variables['loanwords'] = (new Query())
-            ->select(['id', 'loanword', 'lang'])
-            ->from(Constants::TABLE_MAIN)
-            ->where(['siteId' => $currentSiteId])
+        $variables['loanwords'] = Loanword::find()
+            ->siteId($currentSiteId)
             ->all();
+
 
         return $this->renderTemplate('loanwords/index', $variables);
     }
@@ -37,19 +35,18 @@ class BaseController extends Controller
     }
 
     /**
-     * @throws Exception
      * @throws MethodNotAllowedHttpException
+     * @throws Exception
      */
     public function actionSave(): Response
     {
         $this->requirePostRequest();
         $request = Craft::$app->getRequest();
-
-        $loanword = $request->getBodyParam('loanword');
+        $loanword = $request->getBodyParam('title');
         $lang = $request->getBodyParam('lang');
         $propagate = $request->getBodyParam('propagate', false);
 
-        if ($propagate) {
+        if ($propagate === "1") {
             $allSiteIds = array_map(function ($site) {
                 return $site->id;
             }, Craft::$app->sites->getEditableSites());
@@ -85,30 +82,21 @@ class BaseController extends Controller
         return $this->redirectToPostedUrl();
     }
 
-    /**
-     * @throws Exception
-     */
     public function saveLoanword($loanword, $lang, $siteIds): void
     {
-        foreach ($siteIds as $siteId) {
-            $exists = (new Query())
-                ->from(Constants::TABLE_MAIN)
-                ->where([
-                    'siteId' => $siteId,
-                    'loanword' => $loanword,
-                ])
-                ->exists();
+        $newLoanword = new Loanword();
+        $newLoanword->title = $loanword;
+        $newLoanword->loanword = $loanword;
+        $newLoanword->lang = $lang;
 
-            if (!$exists) {
-                Craft::$app->db->createCommand()
-                    ->insert(Constants::TABLE_MAIN, [
-                        'siteId' => $siteId,
-                        'loanword' => $loanword,
-                        'lang' => $lang,
-                        'dateCreated' => new Expression('NOW()'),
-                        'dateUpdated' => new Expression('NOW()'),
-                    ])
-                    ->execute();
+        foreach ($siteIds as $siteId) {
+            $newLoanword->siteId = $siteId;
+
+            try {
+                Craft::$app->elements->saveElement($newLoanword);
+            } catch (\Throwable $e) {
+                Craft::error('Failed to save Loanword: ' . json_encode($loanword) . $e, __METHOD__);
+
             }
         }
     }

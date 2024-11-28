@@ -1,6 +1,7 @@
 {% extends '_layouts/cp.twig' %}
 {% import '_includes/forms.twig' as forms %}
 {% set title = "Fields"|t('app') %}
+{% set elementType = 'samuelreichor\\loanwords\\elements\\Loanword' %}
 {% block content %}
 
   <form method="post">
@@ -13,8 +14,8 @@
     {{ forms.textField({
       first: true,
       label: "Loanword",
-      id: 'loanword',
-      name: 'loanword',
+      id: 'title',
+      name: 'title',
       required: true,
       autofocus: true,
     }) }}
