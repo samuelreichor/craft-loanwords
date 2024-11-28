@@ -1,0 +1,96 @@
+{% extends '_layouts/cp.twig' %}
+
+{% set title = title ?? 'Loanwords' %}
+{% set showSiteMenu = (craft.app.getIsMultiSite() ? true : false) %}
+{% set canHaveDrafts = false %}
+
+{% if showSiteMenu %}
+  {% if selectableSites is not defined %}
+    {% if siteIds is defined %}
+      {% set selectableSites = craft.app.sites.getEditableSites()|filter(s => s.id in siteIds) %}
+    {% else %}
+      {% set selectableSites = craft.app.sites.getEditableSites() %}
+    {% endif %}
+  {% endif %}
+
+  {% if selectedSite is not defined %}
+    {% if selectedSiteId is defined %}
+      {% set selectedSite = craft.app.sites.getSiteById(selectedSiteId) %}
+    {% elseif requestedSite and requestedSite in selectableSites %}
+      {% set selectedSite = requestedSite %}
+    {% else %}
+      {% set selectedSite = selectableSites|length ? selectableSites|first : craft.app.sites.getPrimarySite() %}
+    {% endif %}
+  {% endif %}
+
+  {% set crumbs = (crumbs ?? [])|unshift({
+    id: 'site-crumb',
+    icon: 'world',
+    label: selectedSite.name|t('site'),
+    menu: {
+      items: siteMenuItems(selectableSites, selectedSite),
+      label: 'Select site'|t('app')
+    }
+  }) %}
+{% endif %}
+
+{% block actionButton %}
+  {% set newLoanwordUrl = url('loanwords/new') %}
+  <a href="{{ newLoanwordUrl }}" class="submit btn add icon">New Translation</a>
+{% endblock %}
+
+{% block content %}
+  {% set loanwords = loanwords ?? [] %}
+  <table class="data fullwidth">
+    <thead>
+    <tr>
+      <th>Loanword</th>
+      <th>Lang</th>
+      <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for loanword in loanwords %}
+      <tr>
+        <td>{{ loanword.loanword }}</td>
+        <td>{{ loanword.lang }}</td>
+        <td>
+          <form method="post">
+            {{ csrfInput() }}
+            {{ actionInput('loanwords/base/delete') }}
+            <input type="hidden" name="id" value="{{ loanword.id }}">
+            <button type="submit" class="btn small">Delete</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <h2>Add New Loanword</h2>
+  <form method="post">
+    {{ csrfInput() }}
+    {{ actionInput('loanwords/base/save') }}
+    <div>
+      <label for="loanword">Loanword:</label>
+      <input type="text" id="loanword" name="loanword" required>
+    </div>
+    <div>
+      <label for="lang">Lang:</label>
+      <input type="text" id="lang" name="lang" required>
+    </div>
+    <div>
+      <label>
+        <input type="checkbox" name="propagate" value="1">
+        Save for all sites
+      </label>
+    </div>
+    <button type="submit" class="btn">Save</button>
+  </form>
+{% endblock %}
+
+
+{% block footer %}
+
+{% endblock %}
+
