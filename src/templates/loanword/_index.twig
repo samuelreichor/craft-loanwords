@@ -1,0 +1,16 @@
+{% extends '_layouts/elementindex' %}
+{% set title = 'Loanwords'|t('app') %}
+{% set elementType = 'samuelreichor\\loanwords\\elements\\Loanword' %}
+{% set canHaveDrafts = true %}
+
+{% block actionButton %}
+  {% if 1 == 1 %}
+    <div class="buttons">
+      {{ tag('a', {
+        class: 'btn submit add icon',
+        href:  url('loanwords/new'),
+        text: 'New Loanword',
+      }) }}
+    </div>
+  {% endif %}
+{% endblock %}

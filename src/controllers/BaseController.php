@@ -4,100 +4,83 @@ namespace samuelreichor\loanwords\controllers;
 
 use Craft;
 use craft\web\Controller;
-use samuelreichor\loanwords\Constants;
 use samuelreichor\loanwords\elements\Loanword;
-use yii\db\Exception;
+use samuelreichor\loanwords\Loanwords;
 use yii\web\BadRequestHttpException;
-use yii\web\MethodNotAllowedHttpException;
+use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 
 class BaseController extends Controller
 {
-
-    public function actionIndex(): Response
-    {
-        $request = Craft::$app->getRequest();
-        $currentSiteHandle = $request->getQueryParam('site');
-        $currentSiteId = Craft::$app->sites->getSiteByHandle($currentSiteHandle)->id;
-
-        $variables = [];
-        $variables['loanwords'] = Loanword::find()
-            ->siteId($currentSiteId)
-            ->all();
-
-
-        return $this->renderTemplate('loanwords/index', $variables);
-    }
-
-    public function actionNew(): Response
-    {
-        return $this->renderTemplate('loanwords/edit');
-    }
-
     /**
-     * @throws MethodNotAllowedHttpException
-     * @throws Exception
-     */
-    public function actionSave(): Response
-    {
-        $this->requirePostRequest();
-        $request = Craft::$app->getRequest();
-        $loanword = $request->getBodyParam('title');
-        $lang = $request->getBodyParam('lang');
-        $propagate = $request->getBodyParam('propagate', false);
-
-        if ($propagate === "1") {
-            $allSiteIds = array_map(function ($site) {
-                return $site->id;
-            }, Craft::$app->sites->getEditableSites());
-            $this->saveLoanword($loanword, $lang, $allSiteIds);
-        } else {
-            $siteHandle = $request->getQueryParam('site');
-            $siteId = Craft::$app->sites->getSiteByHandle($siteHandle)->id;
-            $this->saveLoanword($loanword, $lang, [$siteId]);
-        }
-
-        $this->setSuccessFlash(Craft::t('loanwords', 'Loanword "{type}" saved successfully.', [
-            'type' => $loanword,
-        ]));
-        return $this->redirect('loanwords');
-    }
-
-    /**
-     * @throws Exception
-     * @throws MethodNotAllowedHttpException
+     * @throws ForbiddenHttpException
      * @throws BadRequestHttpException
      */
-    public function actionDelete(): Response
+    public function actionEdit(?int $loanwordId = null, ?Loanword $loanword = null): Response
     {
-        $this->requirePostRequest();
-        $id = Craft::$app->getRequest()->getBodyParam('id');
+        $this->requirePermission('saveLoanword');
 
-        if ($id) {
-            Craft::$app->db->createCommand()
-                ->delete(Constants::TABLE_MAIN, ['id' => $id])
-                ->execute();
-        }
-
-        return $this->redirectToPostedUrl();
-    }
-
-    public function saveLoanword($loanword, $lang, $siteIds): void
-    {
-        $newLoanword = new Loanword();
-        $newLoanword->title = $loanword;
-        $newLoanword->loanword = $loanword;
-        $newLoanword->lang = $lang;
-
-        foreach ($siteIds as $siteId) {
-            $newLoanword->siteId = $siteId;
-
-            try {
-                Craft::$app->elements->saveElement($newLoanword);
-            } catch (\Throwable $e) {
-                Craft::error('Failed to save Loanword: ' . json_encode($loanword) . $e, __METHOD__);
-
+        if (!$loanword) {
+            // Are we editing an existing event?
+            if ($loanwordId) {
+                $loanword = Loanword::find()->id($loanwordId)->one();
+                if (!$loanword) {
+                    throw new BadRequestHttpException("Invalid loanword ID: $loanwordId");
+                }
+            } else {
+                // We're creating a new event
+                $loanword = new Loanword();
             }
         }
+
+        return $this->renderTemplate('loanwords/loanword/_edit', [
+            'loanword' => $loanword,
+        ]);
+    }
+
+    /**
+     * @throws ForbiddenHttpException
+     * @throws BadRequestHttpException
+     */
+    public function actionSave()
+    {
+        $this->requirePermission('saveLoanword');
+        $loanwordId = $this->request->getBodyParam('id');
+
+        if ($loanwordId) {
+            $loanword = Loanword::find()->id($loanwordId)->one();
+            if (!$loanword) {
+                throw new BadRequestHttpException("Invalid loanword ID: $loanwordId");
+            }
+        } else {
+            // We're creating a new loanword
+            $loanword = new Loanword();
+        }
+
+        // Populate the event with the form data
+        $loanword->title = $this->request->getBodyParam('title');
+        $loanword->lang = $this->request->getBodyParam('lang');
+
+        // Try to save it
+        if (!Loanwords::getInstance()->loanwords->saveLoanword($loanword)) {
+            if ($this->request->acceptsJson) {
+                return $this->asJson(['errors' => $loanword->getErrors()]);
+            }
+
+            $this->setFailFlash(Craft::t('loanwords', 'Couldn’t save loanword.'));
+
+            // Send the event back to the edit action
+            Craft::$app->urlManager->setRouteParams([
+                'loanword' => $loanword,
+            ]);
+            return null;
+        }
+
+        if ($this->request->acceptsJson) {
+            return $this->asJson(['success' => true]);
+        }
+
+        $this->setSuccessFlash(Craft::t('loanwords', 'Loanword saved.'));
+        $this->redirectToPostedUrl($loanword);
     }
 }

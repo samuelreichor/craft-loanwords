@@ -3,23 +3,19 @@
 namespace samuelreichor\loanwords;
 
 use Craft;
-use craft\base\Model;
-use craft\base\Plugin;
-use craft\events\DefineFieldLayoutFieldsEvent;
-use craft\events\RegisterComponentTypesEvent;
-use craft\fieldlayoutelements\TextField;
-use craft\fieldlayoutelements\TitleField;
-use craft\models\FieldLayout;
-use craft\services\Elements;
-use samuelreichor\loanwords\elements\Loanword;
-use samuelreichor\loanwords\models\Settings;
-
-use craft\events\RegisterUrlRulesEvent;
+use samuelreichor\loanwords\services\LoanwordService;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
-use yii\base\Event;
+use craft\base\Model;
+use craft\base\Plugin;
+use craft\events\RegisterComponentTypesEvent;
+use craft\events\RegisterUrlRulesEvent;
+use craft\services\Elements;
 use craft\web\UrlManager;
+use samuelreichor\loanwords\elements\Loanword;
+use samuelreichor\loanwords\models\Settings;
+use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
@@ -37,19 +33,16 @@ class Loanwords extends Plugin
     public string $schemaVersion = '1.0.0';
     public bool $hasCpSection = true;
     public bool $hasCpSettings = true;
-
-    public static function config(): array
-    {
-        return [
-            'components' => [
-                // Define component configs here...
-            ],
-        ];
-    }
+    public static ?Loanwords $plugin = null;
 
     public function init(): void
     {
         parent::init();
+        self::$plugin = $this;
+
+        $this->setComponents([
+            'loanwords' => LoanwordService::class,
+        ]);
 
         $this->attachEventHandlers();
 
@@ -101,41 +94,23 @@ class Loanwords extends Plugin
             }
         );
 
-        Event::on(
-            FieldLayout::class,
-            FieldLayout::EVENT_DEFINE_NATIVE_FIELDS,
-            function(DefineFieldLayoutFieldsEvent $event) {
-                /** @var FieldLayout $fieldLayout */
-                $fieldLayout = $event->sender;
-
-                if ($fieldLayout->type !== Loanword::class) {
-                    return;
-                }
-
-                $event->fields[] = [
-                    'class' => TextField::class,
-                    'attribute' => 'loanword',
-                    'type' => 'text',
-                    'mandatory' => true,
-                ];
-
-                $event->fields[] = [
-                    'class' => TextField::class,
-                    'attribute' => 'lang',
-                    'type' => 'text',
-                    'mandatory' => true,
-                ];
-            }
-        );
+        Event::on(Elements::class, Elements::EVENT_REGISTER_ELEMENT_TYPES, function (RegisterComponentTypesEvent $event) {
+            $event->types[] = Loanword::class;
+        });
+        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function (RegisterUrlRulesEvent $event) {
+            $event->rules['loanwords'] = ['template' => 'loanwords/loanword/_index.twig'];
+            $event->rules['loanwords/new'] = 'loanwords/base/edit';
+            $event->rules['loanwords/<loanwordId:\d+>'] = 'loanwords/base/edit';
+        });
     }
 
     private function registerCpRoutes(): void
     {
-        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function(RegisterUrlRulesEvent $event) {
+/*         Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function(RegisterUrlRulesEvent $event) {
             $event->rules = array_merge($event->rules, [
                 'loanwords' => 'loanwords/base/index',
                 'loanwords/new' => 'loanwords/base/new',
             ]);
-        });
+        }); */
     }
 }

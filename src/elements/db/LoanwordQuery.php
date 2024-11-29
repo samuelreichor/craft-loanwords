@@ -2,20 +2,16 @@
 
 namespace samuelreichor\loanwords\elements\db;
 
-use craft\db\Query;
+use Craft;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
 
+/**
+ * Loanword query
+ */
 class LoanwordQuery extends ElementQuery
 {
-    public mixed $loanword = null;
     public mixed $lang = null;
-
-    public function loanword($value): self
-    {
-        $this->loanword = $value;
-        return $this;
-    }
 
     public function lang($value): self
     {
@@ -28,15 +24,10 @@ class LoanwordQuery extends ElementQuery
         // JOIN our `products` table:
         $this->joinElementTable('loanwords');
 
-        // SELECT the `price` and `currency` columns:
         $this->query->select([
-            'loanwords.loanword',
+            'loanwords.title',
             'loanwords.lang',
         ]);
-
-        if ($this->loanword) {
-            $this->subQuery->andWhere(Db::parseParam('loanwords.loanword', $this->loanword));
-        }
 
         if ($this->lang) {
             $this->subQuery->andWhere(Db::parseParam('loanwords.lang', $this->lang));
@@ -44,5 +35,4 @@ class LoanwordQuery extends ElementQuery
 
         return parent::beforePrepare();
     }
-
 }

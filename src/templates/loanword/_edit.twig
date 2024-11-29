@@ -1,0 +1,56 @@
+{% extends '_layouts/cp.twig' %}
+{% import '_includes/forms.twig' as forms %}
+
+{% set title = 'Add new Loanword'|t('loanwords') %}
+{% set elementType = 'samuelreichor\\loanwords\\elements\\Loanword' %}
+{% set fullPageForm = true %}
+
+{% block content %}
+  <style>
+    .loanwords-edit-form-wrapper {
+      display: flex;
+      width: 100%;
+      gap: 2rem;
+
+      @media only screen and (max-width: 60.8125rem) {
+        flex-direction: column;
+      }
+    }
+
+    .loanwords-edit-form-wrapper > div {
+      flex-grow: 1;
+      margin-top: 0 !important;
+      margin-bottom: 0 !important;
+    }
+  </style>
+    {{ redirectInput('loanwords') }}
+    {{ actionInput('loanwords/base/save') }}
+
+    {% if currentSite is defined and currentSite %}
+      {{ hiddenInput('siteId', currentSite.id) }}
+    {% endif %}
+
+    {% if loanword is defined and loanword.id %}
+      {{ hiddenInput('id', loanword.id) }}
+    {% endif %}
+  <div class="loanwords-edit-form-wrapper">
+    {{ forms.textField({
+      label: "Loanword",
+      id: 'title',
+      name: 'title',
+      value: loanword.title,
+      required: true,
+      autofocus: true,
+      errors: loanword.getErrors('title'),
+    }) }}
+
+    {{ forms.textField({
+      label: "Lang",
+      id: 'lang',
+      name: 'lang',
+      value: loanword.lang,
+      required: true,
+      errors: loanword.getErrors('lang'),
+    }) }}
+  </div>
+{% endblock %}

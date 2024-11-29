@@ -56,9 +56,8 @@ class Install extends Migration
                 Constants::TABLE_MAIN,
                 [
                     'id' => $this->primaryKey(),
-                    'siteId' => $this->integer()->notNull(),
-                    'loanword' => $this->string()->notNull(),
-                    'lang' => $this->string(10)->notNull(),
+                    'title' => $this->string(),
+                    'lang' => $this->string(10),
                     'dateCreated' => $this->dateTime()->notNull(),
                     'dateUpdated' => $this->dateTime()->notNull(),
                     'uid' => $this->uid(),
@@ -71,22 +70,11 @@ class Install extends Migration
 
     protected function removeTables(): void
     {
-        $this->dropForeignKey('loanwords-siteId', Constants::TABLE_MAIN);
         $this->dropTableIfExists(Constants::TABLE_MAIN);
     }
 
     protected function addForeignKeys(): void
     {
-        $this->addForeignKey(
-            'loanwords-siteId',
-            Constants::TABLE_MAIN,
-            'siteId',
-            '{{%sites}}',
-            'id',
-            'CASCADE',
-            'CASCADE'
-        );
-
         $this->addForeignKey(
             null,
             Constants::TABLE_MAIN,
