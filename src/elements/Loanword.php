@@ -4,8 +4,8 @@ namespace samuelreichor\loanwords\elements;
 
 use Craft;
 use craft\base\Element;
-use craft\elements\User;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\User;
 use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use samuelreichor\loanwords\Constants;
@@ -128,7 +128,7 @@ class Loanword extends Element
             [
                 'template' => 'site/template/path',
                 'variables' => ['loanword' => $this],
-            ]
+            ],
         ];
     }
 
@@ -185,7 +185,7 @@ class Loanword extends Element
     {
         $isNewLoanword = Loanword::find()->id($this->id)->one() === null;
         if (!$this->propagating) {
-            if($isNewLoanword) {
+            if ($isNewLoanword) {
                 Db::upsert(Constants::TABLE_MAIN, [
                     'id' => $this->id,
                     'title' => $this->title,
@@ -198,7 +198,7 @@ class Loanword extends Element
                 ], [
                     'title' => $this->title,
                     'lang' => $this->lang,
-                    'dateUpdated' => Db::prepareDateForDb(new \DateTime())
+                    'dateUpdated' => Db::prepareDateForDb(new \DateTime()),
                 ]);
             }
         }

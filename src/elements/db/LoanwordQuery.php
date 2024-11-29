@@ -2,7 +2,6 @@
 
 namespace samuelreichor\loanwords\elements\db;
 
-use Craft;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
 

@@ -64,6 +64,7 @@ class BaseController extends Controller
 
         // Try to save it
         if (!Loanwords::getInstance()->loanwords->saveLoanword($loanword)) {
+            // @phpstan-ignore-next-line
             if ($this->request->acceptsJson) {
                 return $this->asJson(['errors' => $loanword->getErrors()]);
             }
@@ -77,6 +78,7 @@ class BaseController extends Controller
             return null;
         }
 
+        // @phpstan-ignore-next-line
         if ($this->request->acceptsJson) {
             return $this->asJson(['success' => true]);
         }

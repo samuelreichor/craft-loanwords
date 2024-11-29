@@ -16,7 +16,6 @@ class TextReplacerService
             $this->anglicismsData = $this->queryDatabaseForLoanwords();
         }
         return $this->anglicismsData;
-
     }
 
     public function textReplacer(string $text): string
@@ -54,7 +53,7 @@ class TextReplacerService
             $modifier = $isCaseSensitive ? '' : 'i'; // Set it to case-sensitive based on settings
             $patterns[] = '/\b' . preg_quote($word['title'], '/') . '\b/' . $modifier;
 
-            $replacements[] = function ($matches) use ($word) {
+            $replacements[] = function($matches) use ($word) {
                 return '<span lang="'
                     . htmlspecialchars($word['lang'], ENT_QUOTES, 'UTF-8') . '" '
                     . $this->getLoanwordCssClass()
@@ -79,6 +78,7 @@ class TextReplacerService
 
         Craft::$app->getElements()->startCollectingCacheInfo();
 
+        // @phpstan-ignore-next-line
         $loanwords = Loanword::find()->select(['loanwords.title', 'loanwords.lang'])->asArray()->all();
 
         $cacheInfo = Craft::$app->getElements()->stopCollectingCacheInfo();

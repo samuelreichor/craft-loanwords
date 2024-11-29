@@ -2,13 +2,7 @@
 
 namespace samuelreichor\loanwords;
 
-use samuelreichor\loanwords\twigextensions\TextReplacer;
 use Craft;
-use samuelreichor\loanwords\services\LoanwordService;
-use samuelreichor\loanwords\services\TextReplacerService;
-use Twig\Error\LoaderError;
-use Twig\Error\RuntimeError;
-use Twig\Error\SyntaxError;
 use craft\base\Model;
 use craft\base\Plugin;
 use craft\events\RegisterComponentTypesEvent;
@@ -17,6 +11,12 @@ use craft\services\Elements;
 use craft\web\UrlManager;
 use samuelreichor\loanwords\elements\Loanword;
 use samuelreichor\loanwords\models\Settings;
+use samuelreichor\loanwords\services\LoanwordService;
+use samuelreichor\loanwords\services\TextReplacerService;
+use samuelreichor\loanwords\twigextensions\TextReplacer;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -29,6 +29,9 @@ use yii\base\InvalidConfigException;
  * @author Samuel Reichör <samuelreichor@gmail.com>
  * @copyright Samuel Reichör
  * @license MIT
+ *
+ * @property LoanwordService $loanwords
+ * @property TextReplacerService $textReplacerService
  */
 class Loanwords extends Plugin
 {
@@ -95,11 +98,11 @@ class Loanwords extends Plugin
             }
         );
 
-        Event::on(Elements::class, Elements::EVENT_REGISTER_ELEMENT_TYPES, function (RegisterComponentTypesEvent $event) {
+        Event::on(Elements::class, Elements::EVENT_REGISTER_ELEMENT_TYPES, function(RegisterComponentTypesEvent $event) {
             $event->types[] = Loanword::class;
         });
 
-        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function (RegisterUrlRulesEvent $event) {
+        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function(RegisterUrlRulesEvent $event) {
             $event->rules['loanwords'] = ['template' => 'loanwords/loanword/_index.twig'];
             $event->rules['loanwords/new'] = 'loanwords/base/edit';
             $event->rules['loanwords/<loanwordId:\d+>'] = 'loanwords/base/edit';
