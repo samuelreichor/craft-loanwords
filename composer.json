@@ -1,6 +1,6 @@
 {
-  "name": "samuelreichor/loanwords",
-  "description": "-",
+  "name": "samuelreichor/craft-loanwords",
+  "description": "Enhance screen reader experience by adding loanwords.",
   "type": "craft-plugin",
   "license": "mit",
   "support": {
@@ -10,6 +10,13 @@
     "docs": "https://github.com/samuelreichor/craft-loanwords",
     "rss": "https://github.com/samuelreichor/craft-loanwords/releases.atom"
   },
+  "keywords": [
+    "craftcms",
+    "craft-plugin",
+    "loanwords",
+    "a11y",
+    "accessiblity"
+  ],
   "require": {
     "php": ">=8.2",
     "craftcms/cms": "^5.0.0"
@@ -26,7 +33,6 @@
   "extra": {
     "handle": "loanwords",
     "name": "Loanwords",
-    "developer": "Samuel Reichör",
     "documentationUrl": "https://github.com/samuelreichor/craft-loanwords",
     "class": "samuelreichor\\loanwords\\Loanwords"
   },
@@ -44,5 +50,11 @@
       "yiisoft/yii2-composer": true,
       "craftcms/plugin-installer": true
     }
-  }
+  },
+  "authors": [
+    {
+      "name": "Samuel Reichör",
+      "homepage": "https://samuelreichor.at/libraries"
+    }
+  ]
 }
