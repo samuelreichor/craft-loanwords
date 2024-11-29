@@ -4,6 +4,7 @@ namespace samuelreichor\loanwords\services;
 
 use Craft;
 use samuelreichor\loanwords\elements\Loanword;
+use samuelreichor\loanwords\Loanwords;
 
 class TextReplacerService
 {
@@ -44,17 +45,30 @@ class TextReplacerService
     private function replaceLoanwords(string $text): string
     {
         $anglicisms = $this->getLoanwordsData();
+        $isCaseSensitive = Loanwords::getInstance()->getSettings()->caseSensitive;
 
         $patterns = [];
         $replacements = [];
 
         foreach ($anglicisms as $word) {
-            $patterns[] = '/\b' . preg_quote($word['title'], '/') . '\b/i';
-            $replacements[] = '<span lang="' . htmlspecialchars($word['lang'], ENT_QUOTES, 'UTF-8') . '" style="display: inline;">$0</span>';
+            $modifier = $isCaseSensitive ? '' : 'i'; // Set it to case-sensitive based on settings
+            $patterns[] = '/\b' . preg_quote($word['title'], '/') . '\b/' . $modifier;
+
+            $replacements[] = function ($matches) use ($word) {
+                return '<span lang="'
+                    . htmlspecialchars($word['lang'], ENT_QUOTES, 'UTF-8') . '" '
+                    . $this->getLoanwordCssClass()
+                    . '>' . $matches[0] . '</span>';
+            };
         }
 
-        return preg_replace($patterns, $replacements, $text);
+        foreach ($patterns as $index => $pattern) {
+            $text = preg_replace_callback($pattern, $replacements[$index], $text);
+        }
+
+        return $text;
     }
+
 
     private function queryDatabaseForLoanwords(): array
     {
@@ -78,5 +92,17 @@ class TextReplacerService
         );
 
         return $loanwords;
+    }
+
+    private function getLoanwordCssClass(): string
+    {
+        $defaultStyle = 'style="display: inline;"';
+        $settingsClass = Loanwords::getInstance()->getSettings()->cssClass;
+
+        if ($settingsClass !== '') {
+            return 'class="' . htmlspecialchars($settingsClass, ENT_QUOTES, 'UTF-8') . '" ';
+        }
+
+        return $defaultStyle;
     }
 }

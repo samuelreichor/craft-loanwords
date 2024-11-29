@@ -19,7 +19,7 @@ class BaseController extends Controller
     public function actionEdit(?int $loanwordId = null, ?Loanword $loanword = null): Response
     {
         $this->requirePermission('saveLoanword');
-
+        $defaultLang = Loanwords::getInstance()->getSettings()->defaultLang;
         if (!$loanword) {
             // Are we editing an existing event?
             if ($loanwordId) {
@@ -30,6 +30,7 @@ class BaseController extends Controller
             } else {
                 // We're creating a new event
                 $loanword = new Loanword();
+                $loanword->lang = $defaultLang;
             }
         }
 
@@ -53,7 +54,7 @@ class BaseController extends Controller
                 throw new BadRequestHttpException("Invalid loanword ID: $loanwordId");
             }
         } else {
-            // We're creating a new loanword
+            // Creating a new loanword
             $loanword = new Loanword();
         }
 

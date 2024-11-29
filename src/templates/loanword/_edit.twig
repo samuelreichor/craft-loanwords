@@ -44,13 +44,15 @@
       errors: loanword.getErrors('title'),
     }) }}
 
-    {{ forms.textField({
-      label: "Lang",
+    {{ forms.selectField({
+      label: 'Selected Language',
       id: 'lang',
       name: 'lang',
       value: loanword.lang,
       required: true,
       errors: loanword.getErrors('lang'),
+      options: craft.cp.getLanguageOptions(true),
+      toggle: true,
     }) }}
   </div>
 {% endblock %}

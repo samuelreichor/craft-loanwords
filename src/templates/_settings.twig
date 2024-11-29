@@ -2,5 +2,31 @@
 {# @var settings \samuelreichor\loanwords\models\Settings #}
 
 {% import '_includes/forms.twig' as forms %}
+  <h2>You can set default Values here</h2>
+  <div style="max-width: 700px;margin-top: 1.5rem">
+  {{ forms.selectField({
+    label: 'Default Language',
+    instructions: 'Sets the default language for loanwords, can be overridden for each loanword.',
+    id: 'default-lang',
+    name: 'defaultLang',
+    value: settings.defaultLang,
+    options: craft.cp.getLanguageOptions(true),
+    toggle: true,
+  }) }}
 
-{# ... #}
+  {{ forms.lightswitchField({
+    label: 'Case-Sensitive Replacement',
+    instructions: 'Enable this option to make the loanword replacement process case-sensitive.',
+    id: 'case-sensitive',
+    name: 'caseSensitive',
+    on: settings.caseSensitive,
+  }) }}
+
+  {{ forms.textField({
+    label: 'Default CSS Class',
+    instructions: 'Enter a CSS class to apply to all loanwords. Leave blank if not needed.',
+    id: 'css-class',
+    name: 'cssClass',
+    value: settings.cssClass,
+  }) }}
+</div>

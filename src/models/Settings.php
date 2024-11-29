@@ -10,4 +10,7 @@ use craft\base\Model;
  */
 class Settings extends Model
 {
+    public string $defaultLang = 'en';
+    public bool $caseSensitive = false;
+    public string $cssClass = '';
 }
