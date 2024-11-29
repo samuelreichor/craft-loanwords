@@ -2,8 +2,10 @@
 
 namespace samuelreichor\loanwords;
 
+use samuelreichor\loanwords\twigextensions\TextReplacer;
 use Craft;
 use samuelreichor\loanwords\services\LoanwordService;
+use samuelreichor\loanwords\services\TextReplacerService;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
@@ -42,13 +44,12 @@ class Loanwords extends Plugin
 
         $this->setComponents([
             'loanwords' => LoanwordService::class,
+            'textReplacerService' => TextReplacerService::class,
         ]);
 
-        $this->attachEventHandlers();
+        $this->registerTwigExtensions();
 
-        if (Craft::$app->getRequest()->getIsCpRequest()) {
-            $this->registerCpRoutes();
-        }
+        $this->attachEventHandlers();
 
         // Any code that creates an element query or loads Twig should be deferred until
         // after Craft is fully initialized, to avoid conflicts with other plugins/modules
@@ -97,6 +98,7 @@ class Loanwords extends Plugin
         Event::on(Elements::class, Elements::EVENT_REGISTER_ELEMENT_TYPES, function (RegisterComponentTypesEvent $event) {
             $event->types[] = Loanword::class;
         });
+
         Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function (RegisterUrlRulesEvent $event) {
             $event->rules['loanwords'] = ['template' => 'loanwords/loanword/_index.twig'];
             $event->rules['loanwords/new'] = 'loanwords/base/edit';
@@ -104,13 +106,11 @@ class Loanwords extends Plugin
         });
     }
 
-    private function registerCpRoutes(): void
+    private function registerTwigExtensions()
     {
-/*         Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function(RegisterUrlRulesEvent $event) {
-            $event->rules = array_merge($event->rules, [
-                'loanwords' => 'loanwords/base/index',
-                'loanwords/new' => 'loanwords/base/new',
-            ]);
-        }); */
+        if (Craft::$app->request->getIsSiteRequest()) {
+            $getReplacedText = new TextReplacer();
+            Craft::$app->view->registerTwigExtension($getReplacedText);
+        }
     }
 }
