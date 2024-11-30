@@ -28,7 +28,9 @@
 ## Features
 
 - Manage and organize your loanwords effortlessly within Craft CMS.
-- Includes a Twig Extension to automatically wrap loanwords with a <span lang=""> tag for accessibility.
+- Includes a Twig Extension to automatically wrap loanwords with a tag for accessibility.
+- Customize default language tags and CSS classes for consistent styling.
+- Provides case-sensitive and case-insensitive options for flexible loanword matching.
 
 ## Requirements
 
@@ -36,7 +38,7 @@ This plugin requires Craft CMS 5.0.0 or later, and PHP 8.2 or later.
 
 ## Documentation
 
-Visit the Craft [Loanwords page](https://samuelreichor.at/libraries/craft-loanwords) for all documentation and guides.
+Visit the [Loanwords page](https://samuelreichor.at/libraries/craft-loanwords) for all documentation and guides.
 
 ## Support
 
