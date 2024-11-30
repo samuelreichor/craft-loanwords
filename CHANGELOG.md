@@ -1,4 +1,4 @@
 # Release Notes for craft-loanwords
 
-## 1.0.0
+## 5.0.0 2024-11-30
 - Initial release
